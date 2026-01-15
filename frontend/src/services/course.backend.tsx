@@ -3,29 +3,18 @@ import { getBaseUrl } from "../config/apiConfig";
 const getToken = () => localStorage.getItem("token");
 
 export const getCourses = async () => {
-  // Tenta rota autenticada primeiro (útil para admin logado)
-  try {
-    const token = getToken();
-    if (token) {
-      const res = await fetch(`${getBaseUrl()}/api/cursos`, { 
-        headers: { Authorization: `Bearer ${token}` } 
-      });
-      if (res.ok) return res.json();
-    }
-  } catch (e) {
-    // ignore e tentar rota pública
-  }
-
-  // Fallback para rota pública (quando não há token ou token é inválido)
+  // Fallback para rota pública (sempre usa a rota pública para registro)
   try {
     const publicRes = await fetch(`${getBaseUrl()}/api/public-cursos`);
-    if (publicRes.ok) return publicRes.json();
-    const text = await publicRes.text();
-    throw new Error(text || 'Erro ao buscar cursos (public)');
-  } catch (err: any) {
-    // tentativa final: lançar mensagem amigável
-    throw new Error(err.message || 'Erro ao buscar cursos');
+    if (publicRes.ok) {
+      return publicRes.json();
+    }
+  } catch (e) {
+    console.error('Erro ao buscar cursos da rota pública:', e);
   }
+
+  // Se fallback falhar, retorna array vazio em vez de erro
+  return [];
 };
 
 export const createCourse = async (name: string) => {
