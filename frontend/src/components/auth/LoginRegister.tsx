@@ -111,7 +111,7 @@ export function LoginRegister({ onLogin, onRegister }: LoginRegisterProps) {
           <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
             <GraduationCap className="size-6 sm:size-8 text-white" />
           </div>
-          <CardTitle className="text-xl sm:text-2xl">Sistema de Agendamento</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">AgendaProf</CardTitle>
           <CardDescription className="text-sm">
             Plataforma de agendamento entre alunos e professores
           </CardDescription>
@@ -248,7 +248,7 @@ export function LoginRegister({ onLogin, onRegister }: LoginRegisterProps) {
                           const selected = teacherCourses.includes(c.name);
                           return (
                             <SelectItem key={c._id} value={c.name}>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 pointer-events-none">
                                 <span className={`w-5 h-5 rounded-sm flex items-center justify-center ${selected ? "bg-indigo-500 text-white" : "bg-white border"}`}>
                                   {selected ? <Check className="size-3" /> : null}
                                 </span>
