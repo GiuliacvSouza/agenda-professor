@@ -105,8 +105,8 @@ export function LoginRegister({ onLogin, onRegister }: LoginRegisterProps) {
   }; 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
-      <Card className="w-full max-w-md shadow-xl border-0">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4 overflow-visible">
+      <Card className="w-full max-w-md shadow-xl border-0 relative z-0">
         <CardHeader className="space-y-3 text-center">
           <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
             <GraduationCap className="size-6 sm:size-8 text-white" />
@@ -117,7 +117,7 @@ export function LoginRegister({ onLogin, onRegister }: LoginRegisterProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={isLogin ? "login" : "register"} onValueChange={(v) => setIsLogin(v === "login")} className="w-full">
+          <Tabs value={isLogin ? "login" : "register"} onValueChange={(v) => setIsLogin(v === "login")} className="w-full relative">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Entrar</TabsTrigger>
               <TabsTrigger value="register">Registar</TabsTrigger>
@@ -237,7 +237,7 @@ export function LoginRegister({ onLogin, onRegister }: LoginRegisterProps) {
                 )}
 
                 {role === "teacher" && (
-                  <div className="space-y-2">
+                  <div className="space-y-2 relative z-10">
                     <Label htmlFor="register-courses">Associação a Cursos</Label>
                     <Select onValueChange={(value) => toggleCourse(value)} disabled={loadingCourses}>
                       <SelectTrigger>
