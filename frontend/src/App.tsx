@@ -6,6 +6,7 @@ import { AdminDashboard } from "./components/admin/AdminDashboard";
 import { TeacherSchedule } from "./components/booking/TeacherSchedule";
 import { NotificationPanel } from "./components/notifications/NotificationPanel";
 import { Toaster } from "./components/ui/sonner";
+import { APIToggle } from "./components/APIToggle";
 import {
   setLoggedUser,
   loggedEmail,
@@ -238,6 +239,11 @@ export default function App() {
   // Show appropriate dashboard based on role
   return (
     <>
+      {/* Global API toggle (visible on all views) */}
+      <div className="fixed top-4 right-4 z-50">
+        <APIToggle />
+      </div>
+
       {loggedRole === "aluno" && (
         <StudentDashboard
           onLogout={handleLogout}
