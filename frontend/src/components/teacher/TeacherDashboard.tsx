@@ -186,7 +186,7 @@ export function TeacherDashboard({ onLogout, onViewNotifications, notifications 
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3 mb-6 sm:mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm">Aulas Agendadas</CardTitle>
+              <CardTitle className="text-sm">Marcações Agendadas</CardTitle>
               <Calendar className="size-4 text-gray-500" />
             </CardHeader>
             <CardContent>
