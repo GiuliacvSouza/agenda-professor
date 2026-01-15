@@ -239,8 +239,8 @@ export default function App() {
   // Show appropriate dashboard based on role
   return (
     <>
-      {/* Global API toggle (visible on all views - bottom right) */}
-      <div className="fixed bottom-4 right-4 z-50">
+      {/* Global API toggle (visible on all views - bottom left) */}
+      <div className="fixed bottom-4 left-4 z-50">
         <APIToggle />
       </div>
 
