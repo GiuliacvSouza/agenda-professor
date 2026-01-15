@@ -247,7 +247,7 @@ export function LoginRegister({ onLogin, onRegister }: LoginRegisterProps) {
                         {courses.map((c) => {
                           const selected = teacherCourses.includes(c.name);
                           return (
-                            <SelectItem key={c._id} value={c.name} onClick={() => toggleCourse(c.name)}>
+                            <SelectItem key={c._id} value={c.name}>
                               <div className="flex items-center gap-2">
                                 <span className={`w-5 h-5 rounded-sm flex items-center justify-center ${selected ? "bg-indigo-500 text-white" : "bg-white border"}`}>
                                   {selected ? <Check className="size-3" /> : null}
