@@ -4,6 +4,10 @@ const cors = require('cors')
 const app = express()
 
 const authRoutes = require('./src/routes/auth.routes')
+const userRoutes = require('./src/routes/user.routes')
+const bookingRoutes = require('./src/routes/booking.routes')
+const notificationRoutes = require('./src/routes/notification.routes')
+const cursoRoutes = require('./src/routes/curso.routes')
 
 app.use(cors())
 app.use(express.json())
@@ -15,5 +19,9 @@ app.use((req, res, next) => {
 
 console.log("APP IMPORTADO");
 app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/bookings', bookingRoutes)
+app.use('/api/notifications', notificationRoutes)
+app.use('/api/cursos', cursoRoutes)
 
 module.exports = app

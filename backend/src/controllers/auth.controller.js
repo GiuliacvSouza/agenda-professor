@@ -2,12 +2,9 @@ const User = require("../models/Users");
 const bcrypt = require("bcrypt");
 const generateToken = require("../../utilities/jwt.generate");
 
-/**
- * REGISTRO
- */
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { nome_completo, email, password, tipo_usuario, curso, cursos, unidades } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -17,9 +14,13 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      nome_completo: name,
+      nome_completo: nome_completo,
       email,
       password: hashedPassword,
+      tipo_usuario: tipo_usuario,
+      curso: tipo_usuario === "aluno" ? curso : undefined,
+      cursos: tipo_usuario === "professor" ? (Array.isArray(cursos) ? cursos : cursos ? [cursos] : []) : [],
+      unidades: tipo_usuario === "professor" ? (Array.isArray(unidades) ? unidades : []) : [],
     });
 
     res.status(201).json({
@@ -28,6 +29,10 @@ exports.register = async (req, res) => {
         id: user._id,
         nome_completo: user.nome_completo,
         email: user.email,
+        tipo_usuario: user.tipo_usuario,
+        curso: user.curso || (user.cursos && user.cursos.length ? user.cursos.join(', ') : undefined),
+        cursos: user.cursos,
+        unidades: user.unidades,
       },
     });
   } catch (error) {
@@ -35,9 +40,6 @@ exports.register = async (req, res) => {
   }
 };
 
-/**
- * LOGIN
- */
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -53,7 +55,7 @@ exports.login = async (req, res) => {
     }
 
     const token = generateToken(user._id);
-
+    
     res.json({
       message: "Login efetuado com sucesso",
       token,
@@ -61,6 +63,10 @@ exports.login = async (req, res) => {
         id: user._id,
         nome_completo: user.nome_completo,
         email: user.email,
+        tipo_usuario: user.tipo_usuario,
+        curso: user.curso || (user.cursos && user.cursos.length ? user.cursos.join(', ') : undefined),
+        cursos: user.cursos,
+        unidades: user.unidades,
       },
     });
   } catch (error) {

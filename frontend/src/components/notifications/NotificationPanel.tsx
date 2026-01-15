@@ -6,12 +6,12 @@ import { Bell, Calendar, CheckCircle, XCircle, Clock, X } from "lucide-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "../ui/sheet";
 
 interface Notification {
-  id: string;
+  _id: string;
   type: "booking_confirmed" | "booking_cancelled" | "booking_request" | "reminder";
   title: string;
   message: string;
-  time: string;
   read: boolean;
+  createdAt: string;
 }
 
 interface NotificationPanelProps {
@@ -30,6 +30,18 @@ export function NotificationPanel({
   onMarkAllAsRead,
 }: NotificationPanelProps) {
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `Há ${days} dia${days > 1 ? 's' : ''}`;
+    if (hours > 0) return `Há ${hours} hora${hours > 1 ? 's' : ''}`;
+    return 'Agora';
+  };
 
   const getIcon = (type: Notification["type"]) => {
     switch (type) {
@@ -91,7 +103,7 @@ export function NotificationPanel({
               {notifications.length > 0 ? (
                 notifications.map((notification) => (
                   <Card
-                    key={notification.id}
+                    key={notification._id}
                     className={`${getColor(notification.type)} ${
                       !notification.read ? "border-2" : "opacity-60"
                     }`}
@@ -109,7 +121,7 @@ export function NotificationPanel({
                                 variant="ghost"
                                 size="icon"
                                 className="h-6 w-6 -mt-1"
-                                onClick={() => onMarkAsRead(notification.id)}
+                                onClick={() => onMarkAsRead(notification._id)}
                               >
                                 <X className="size-3" />
                               </Button>
@@ -119,7 +131,7 @@ export function NotificationPanel({
                             {notification.message}
                           </p>
                           <p className="text-xs text-gray-500 pt-1">
-                            {notification.time}
+                            {formatTime(notification.createdAt)}
                           </p>
                         </div>
                       </div>

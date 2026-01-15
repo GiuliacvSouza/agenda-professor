@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -9,15 +9,20 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-
+import { loggedName, loggedRole, loggedEmail, loggedUserId } from "../auth/loggedUserInfo";
+import { getBookings, updateBookingStatus } from "../../services/booking.backend";
+import { updateUser } from "../../services/user.backend";
 interface Booking {
-  id: string;
-  studentName: string;
-  studentEmail: string;
+  _id: string;
+  student: {
+    nome_completo: string;
+    email: string;
+    curso?: string;
+  };
   date: string;
   time: string;
-  status: "confirmed" | "pending";
-  subject: string;
+  status: "confirmed" | "pending" | "cancelled";
+  reason: string;
 }
 
 interface AvailabilitySlot {
@@ -34,10 +39,7 @@ interface TeacherDashboardProps {
 }
 
 export function TeacherDashboard({ onLogout, onViewNotifications, notifications }: TeacherDashboardProps) {
-  const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([
-    { id: "1", day: "Segunda-feira", startTime: "10:00", endTime: "12:00" },
-    { id: "2", day: "Quarta-feira", startTime: "14:00", endTime: "16:00" },
-  ]);
+  const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
 
   const [isAddingSlot, setIsAddingSlot] = useState(false);
   const [newSlot, setNewSlot] = useState({
@@ -46,53 +48,87 @@ export function TeacherDashboard({ onLogout, onViewNotifications, notifications 
     endTime: "",
   });
 
-  // Mock data
-  const bookings: Booking[] = [
-    {
-      id: "1",
-      studentName: "João Almeida",
-      studentEmail: "joao.almeida@exemplo.com",
-      date: "25 Nov 2025",
-      time: "10:00",
-      status: "confirmed",
-      subject: "Dúvidas sobre projeto final",
-    },
-    {
-      id: "2",
-      studentName: "Maria Santos",
-      studentEmail: "maria.santos@exemplo.com",
-      date: "25 Nov 2025",
-      time: "11:00",
-      status: "pending",
-      subject: "Revisão de matéria",
-    },
-    {
-      id: "3",
-      studentName: "Pedro Costa",
-      studentEmail: "pedro.costa@exemplo.com",
-      date: "27 Nov 2025",
-      time: "14:00",
-      status: "confirmed",
-      subject: "Orientação de trabalho",
-    },
-  ];
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingAvailability, setLoadingAvailability] = useState(true);
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const data = await getBookings();
+        setBookings(data);
+      } catch (error) {
+        console.error("Erro ao buscar agendamentos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchAvailability = async () => {
+      try {
+        if (loggedUserId) {
+          const userData = await updateUser(loggedUserId, {});
+          if (userData.user && userData.user.horarios_disponiveis) {
+            const slots = userData.user.horarios_disponiveis.map((slot: string, index: number) => ({
+              id: `slot-${index}`,
+              day: slot.split(' ')[0],
+              startTime: slot.split(' ')[1]?.split('-')[0] || '',
+              endTime: slot.split(' ')[1]?.split('-')[1] || '',
+            }));
+            setAvailabilitySlots(slots);
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao buscar horários:", error);
+      } finally {
+        setLoadingAvailability(false);
+      }
+    };
+
+    fetchBookings();
+    fetchAvailability();
+  }, []);
+
+  const handleUpdateBookingStatus = async (id: string, status: string) => {
+    try {
+      await updateBookingStatus(id, status);
+      setBookings(prev => prev.map(booking => 
+        booking._id === id ? { ...booking, status: status as "confirmed" | "pending" | "cancelled" } : booking
+      ));
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error);
+    }
+  };
+
+  const saveAvailabilityToBackend = async (slots: AvailabilitySlot[]) => {
+    try {
+      const horariosString = slots.map(slot => `${slot.day} ${slot.startTime}-${slot.endTime}`);
+      await updateUser(loggedUserId, { horarios_disponiveis: horariosString });
+    } catch (error) {
+      console.error("Erro ao salvar horários:", error);
+    }
+  };
 
   const handleAddSlot = () => {
     if (newSlot.day && newSlot.startTime && newSlot.endTime) {
-      setAvailabilitySlots([
+      const newSlots = [
         ...availabilitySlots,
         {
           id: Date.now().toString(),
           ...newSlot,
         },
-      ]);
+      ];
+      setAvailabilitySlots(newSlots);
+      saveAvailabilityToBackend(newSlots);
       setNewSlot({ day: "", startTime: "", endTime: "" });
       setIsAddingSlot(false);
     }
   };
 
   const handleRemoveSlot = (id: string) => {
-    setAvailabilitySlots(availabilitySlots.filter((slot) => slot.id !== id));
+    const newSlots = availabilitySlots.filter((slot) => slot.id !== id);
+    setAvailabilitySlots(newSlots);
+    saveAvailabilityToBackend(newSlots);
   };
 
   const getStatusColor = (status: Booking["status"]) => {
@@ -118,7 +154,7 @@ export function TeacherDashboard({ onLogout, onViewNotifications, notifications 
               <BookOpen className="size-4 sm:size-5 text-white" />
             </div>
             <div>
-              <h1 className="text-base sm:text-lg">Dashboard do Professor</h1>
+              <h1 className="text-base sm:text-lg">Olá, {loggedRole}(a) {loggedName}</h1>
               <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Gerir as suas aulas</p>
             </div>
           </div>
@@ -129,7 +165,7 @@ export function TeacherDashboard({ onLogout, onViewNotifications, notifications 
               className="relative h-8 w-8 sm:h-10 sm:w-10"
               onClick={onViewNotifications}
             >
-              <Bell className="size-4 sm:size-5" />
+              <Bell className="size-4 sm:size-5"/>
               {notifications > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center">
                   {notifications}
@@ -191,30 +227,34 @@ export function TeacherDashboard({ onLogout, onViewNotifications, notifications 
           </TabsList>
 
           <TabsContent value="bookings" className="space-y-4">
-            {bookings.length > 0 ? (
+            {loading ? (
+              <div className="text-center py-12">
+                <p>Carregando...</p>
+              </div>
+            ) : bookings.length > 0 ? (
               bookings.map((booking) => (
-                <Card key={booking.id}>
+                <Card key={booking._id}>
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col gap-4">
                       <div className="flex items-start gap-3 sm:gap-4 flex-1">
                         <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
                           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs sm:text-sm">
-                            {booking.studentName.split(" ").map(n => n[0]).join("")}
+                            {booking.student.nome_completo.split(" ").map(n => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 space-y-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <h3 className="font-medium text-sm sm:text-base truncate">{booking.studentName}</h3>
+                            <h3 className="font-medium text-sm sm:text-base truncate">{booking.student.nome_completo}</h3>
                             <Badge variant="outline" className={`${getStatusColor(booking.status)} text-xs sm:text-sm w-fit`}>
                               {getStatusText(booking.status)}
                             </Badge>
                           </div>
-                          <p className="text-xs sm:text-sm text-gray-600 truncate">{booking.studentEmail}</p>
-                          <p className="text-xs sm:text-sm text-gray-700 mt-2">{booking.subject}</p>
+                          <p className="text-xs sm:text-sm text-gray-600 truncate">{booking.student.email}</p>
+                          <p className="text-xs sm:text-sm text-gray-700 mt-2">{booking.reason}</p>
                           <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 mt-2">
                             <div className="flex items-center gap-1">
                               <Calendar className="size-3 sm:size-4" />
-                              <span>{booking.date}</span>
+                              <span>{new Date(booking.date).toLocaleDateString()}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="size-3 sm:size-4" />
@@ -226,16 +266,30 @@ export function TeacherDashboard({ onLogout, onViewNotifications, notifications 
                       <div className="flex gap-2 flex-wrap">
                         {booking.status === "pending" && (
                           <>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none text-xs sm:text-sm">
+                            <Button 
+                              size="sm" 
+                              className="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none text-xs sm:text-sm"
+                              onClick={() => handleUpdateBookingStatus(booking._id, "confirmed")}
+                            >
                               Confirmar
                             </Button>
-                            <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50 flex-1 sm:flex-none text-xs sm:text-sm">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-red-600 hover:bg-red-50 flex-1 sm:flex-none text-xs sm:text-sm"
+                              onClick={() => handleUpdateBookingStatus(booking._id, "cancelled")}
+                            >
                               Rejeitar
                             </Button>
                           </>
                         )}
                         {booking.status === "confirmed" && (
-                          <Button size="sm" variant="outline" className="text-red-600 hover:bg-red-50 w-full sm:w-auto text-xs sm:text-sm">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-red-600 hover:bg-red-50 w-full sm:w-auto text-xs sm:text-sm"
+                            onClick={() => handleUpdateBookingStatus(booking._id, "cancelled")}
+                          >
                             Cancelar
                           </Button>
                         )}
@@ -322,7 +376,11 @@ export function TeacherDashboard({ onLogout, onViewNotifications, notifications 
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {availabilitySlots.length > 0 ? (
+                {loadingAvailability ? (
+                  <div className="text-center py-8">
+                    <p>Carregando horários...</p>
+                  </div>
+                ) : availabilitySlots.length > 0 ? (
                   availabilitySlots.map((slot) => (
                     <div
                       key={slot.id}
