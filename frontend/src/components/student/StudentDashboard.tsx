@@ -228,7 +228,15 @@ export function StudentDashboard({ onLogout, onSelectTeacher, onViewNotification
                     <div className="space-y-2">
                               <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                         <BookOpen className="size-3 sm:size-4" />
-                        <span className="truncate">{(teacher.cursos && teacher.cursos.length) ? teacher.cursos.join(', ') : (teacher.curso || "N/A")}</span>
+                        <span className="truncate">{
+                          (teacher.cursos && teacher.cursos.length) 
+                            ? teacher.cursos.join(', ') 
+                            : (teacher.curso 
+                              ? teacher.curso 
+                              : (Array.isArray(teacher.unidades) && teacher.unidades.length 
+                                ? teacher.unidades.map(u => u.curso).filter(Boolean).join(', ')
+                                : "N/A"))
+                        }</span>
                       </div>
                       <div className="space-y-1">
                         <p className="text-xs sm:text-sm text-gray-500">Unidades / Disciplina(s):</p>
