@@ -9,15 +9,10 @@ const getApiBaseUrl = (): string => {
     return RENDER_URL;
   }
 
-  const useRender = localStorage.getItem("useRenderAPI");
+  const useLocalhost = localStorage.getItem("useLocalhost");
   
-  // Em produção (GitHub Pages), usa Render por padrão
-  if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-    return useRender === "false" ? LOCALHOST_URL : RENDER_URL;
-  }
-  
-  // Em desenvolvimento, usa localhost por padrão
-  return useRender === "true" ? RENDER_URL : LOCALHOST_URL;
+  // Por padrão, usa Render em qualquer ambiente
+  return useLocalhost === "true" ? LOCALHOST_URL : RENDER_URL;
 };
 
 export const API_CONFIG = {
@@ -26,8 +21,8 @@ export const API_CONFIG = {
   RENDER_URL,
   
   // Funções para alternar entre ambientes
-  useRender: () => localStorage.setItem("useRenderAPI", "true"),
-  useLocalhost: () => localStorage.setItem("useRenderAPI", "false"),
-  isUsingRender: (): boolean => localStorage.getItem("useRenderAPI") === "true",
-  isUsingLocalhost: (): boolean => !localStorage.getItem("useRenderAPI") || localStorage.getItem("useRenderAPI") === "false",
+  useRender: () => localStorage.removeItem("useLocalhost"),
+  useLocalhost: () => localStorage.setItem("useLocalhost", "true"),
+  isUsingRender: (): boolean => localStorage.getItem("useLocalhost") !== "true",
+  isUsingLocalhost: (): boolean => localStorage.getItem("useLocalhost") === "true",
 };
