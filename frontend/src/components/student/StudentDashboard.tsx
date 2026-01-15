@@ -96,11 +96,18 @@ export function StudentDashboard({ onLogout, onSelectTeacher, onViewNotification
     // check cursos string or array
     if ((teacher.cursos && teacher.cursos.join(', ').toLowerCase().includes(q)) || (teacher.curso && teacher.curso.toLowerCase().includes(q))) return true;
 
-    // check unidades (array of { curso, unidades })
+    // check unidades (array of { curso, unidades }) - only from student's course
     if (Array.isArray(teacher.unidades)) {
       for (const uGroup of teacher.unidades) {
+        // Check course name in all courses (regardless of student's course)
         if (uGroup.curso && uGroup.curso.toLowerCase().includes(q)) return true;
-        if (uGroup.unidades && uGroup.unidades.some((u) => u.toLowerCase().includes(q))) return true;
+        
+        // Check units only from student's course
+        if (loggedCourse && uGroup.curso && uGroup.curso.trim().toLowerCase() === loggedCourse.trim().toLowerCase()) {
+          if (uGroup.unidades && uGroup.unidades.some((u) => u.toLowerCase().includes(q))) {
+            return true;
+          }
+        }
       }
     }
 
