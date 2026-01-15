@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:5000/api";
+import { API_CONFIG } from "../config/apiConfig";
+const API_BASE = `${API_CONFIG.getBaseUrl()}/api`;
 
 const getToken = () => localStorage.getItem("token");
 

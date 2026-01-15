@@ -1,22 +1,23 @@
 import { useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
+import { API_CONFIG } from "@/config/apiConfig";
 
 export const APIToggle = () => {
   const [isRender, setIsRender] = useState(false);
 
   useEffect(() => {
     // Verificar qual ambiente está ativo ao carregar
-    setIsRender(localStorage.getItem("useRenderAPI") === "true");
+    setIsRender(API_CONFIG.isUsingRender());
   }, []);
 
   const handleToggle = (checked: boolean) => {
     if (checked) {
-      localStorage.setItem("useRenderAPI", "true");
+      API_CONFIG.useRender();
     } else {
-      localStorage.setItem("useRenderAPI", "false");
+      API_CONFIG.useLocalhost();
     }
     setIsRender(checked);
-    // Opcional: recarregar a página para aplicar as mudanças
+    // Recarga para aplicar as mudanças
     window.location.reload();
   };
 

@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:5000/api/auth";
+import { API_CONFIG } from "../config/apiConfig";
+const API_BASE = `${API_CONFIG.getBaseUrl()}/api/auth`;
 import { setLoggedUser } from "../components/auth/loggedUserInfo"; // Importe a nova função
 import {
   loggedEmail,
