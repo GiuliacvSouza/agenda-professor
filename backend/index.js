@@ -19,7 +19,7 @@ app.use((req, res, next) => {
 
 console.log("APP IMPORTADO");
 
-// Rota pública temporária para debugging: lista cursos sem autenticação
+// Rota pública para listar cursos sem autenticação (necessária para formulário de registro)
 const Course = require('./src/models/Course');
 app.get('/api/public-cursos', async (req, res) => {
   try {
