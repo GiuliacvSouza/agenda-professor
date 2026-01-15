@@ -7,6 +7,8 @@ import { TeacherSchedule } from "./components/booking/TeacherSchedule";
 import { NotificationPanel } from "./components/notifications/NotificationPanel";
 import { Toaster } from "./components/ui/sonner";
 import { APIToggle } from "./components/APIToggle";
+
+// Force cache invalidation - version: 2026-01-15-001
 import {
   setLoggedUser,
   loggedEmail,

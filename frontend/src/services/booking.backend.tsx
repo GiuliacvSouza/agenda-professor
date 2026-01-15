@@ -1,5 +1,5 @@
-import { API_CONFIG } from "../config/apiConfig";
-const API_BASE = `${API_CONFIG.getBaseUrl()}/api`;
+import { getBaseUrl } from "../config/apiConfig";
+const API_BASE = `${getBaseUrl()}/api`;
 
 const getToken = () => localStorage.getItem("token");
 
