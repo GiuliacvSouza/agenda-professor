@@ -141,8 +141,10 @@ export function TeacherDashboard({ onLogout, onViewNotifications, notifications 
     return status === "confirmed" ? "Confirmada" : "Pendente";
   };
 
-  const upcomingBookings = bookings.filter(b => b.status === "confirmed").length;
-  const pendingBookings = bookings.filter(b => b.status === "pending").length;
+  // Filtra agendamentos não cancelados para exibição
+  const activeBookings = bookings.filter(b => b.status !== "cancelled");
+  const upcomingBookings = activeBookings.filter(b => b.status === "confirmed").length;
+  const pendingBookings = activeBookings.filter(b => b.status === "pending").length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -231,8 +233,8 @@ export function TeacherDashboard({ onLogout, onViewNotifications, notifications 
               <div className="text-center py-12">
                 <p>Carregando...</p>
               </div>
-            ) : bookings.length > 0 ? (
-              bookings.map((booking) => (
+            ) : activeBookings.length > 0 ? (
+              activeBookings.map((booking) => (
                 <Card key={booking._id}>
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col gap-4">
